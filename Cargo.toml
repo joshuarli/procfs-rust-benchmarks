@@ -1,0 +1,12 @@
+[package]
+name = "procfs-rust-benchmarks"
+version = "0.0.0"
+authors = ["Joshua Li <josh@jrl.ninja>"]
+
+[[bin]]
+name = "bench-stat-partial-read"
+path = "stat-partial-read.rs"
+
+[[bin]]
+name = "bench-stat-complete-read"
+path = "stat-complete-read.rs"
