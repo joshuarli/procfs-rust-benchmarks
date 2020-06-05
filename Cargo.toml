@@ -10,3 +10,7 @@ path = "stat-partial-read.rs"
 [[bin]]
 name = "bench-stat-complete-read"
 path = "stat-complete-read.rs"
+
+[[bin]]
+name = "bench-stat-complete-read-oneshot"
+path = "stat-complete-read-oneshot.rs"

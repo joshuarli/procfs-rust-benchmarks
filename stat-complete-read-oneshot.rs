@@ -8,8 +8,8 @@ use std::{
 fn main () -> Result<(), io::Error> {
     for _ in 0..100000 {
         let mut f = File::open("/proc/stat")?;
-        let mut buf = Vec::new();
-        f.read_to_end(&mut buf)?;
+        let mut buf = [0; 4096];
+        f.read(&mut buf).unwrap();
         // print!("{}", String::from_utf8_lossy(&buf));
     }
     Ok(())

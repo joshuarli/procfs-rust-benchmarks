@@ -32,6 +32,38 @@ Then we have to guess a good buffer size - 4096 should be adequate for most file
 But what if the kernel lazily generates stuff? In the case of /proc/stat I'm only interested in
 the first line which summarizes CPU time spent.
 
+After staring at some perf graphs (`perf record -g ./bench-stat-partial-read`, `perf report --stdio -s cpu` by the way),
+the two didn't really look much different. A huge chunk of the time under kernel `show_stat` is indeed
+spent in human formatting (`seq_put_decimal_ull` -> `num_to_str`, `seq_printf`)
+
+So, I just decided to benchmark things.
+
+100k loops of complete reads took around ~2.1s, and partial reads of 128 bytes ~1.2s.
+
+Although I had a suspicion it was probably just the 6x read syscalls.
+100k loops of doing a single 4096 byte read also ~1.2s.
+
+So in conclusion, no, the kernel does not appear to lazily generate at least the contents of /proc/stat.
+And, procfs in general should be consumed with one read syscall, not multiple.
+(There are still 2 more syscalls involved - open and close - which is why `readfile` will be useful here.)
+
+The only Rust method I found suitable for doing a single, oneshot read was:
+
+```rust
+let mut f = File::open("/proc/stat")?;
+let mut buf = [0; 4096];
+f.read(&mut buf).unwrap();
+```
+
+There is also `read_exact`, although, it actually results in 2 reads. Consider the scenario:
+
+Generated `/proc/stat` will be 1400 bytes.
+`read_exact` into a 4096 bytes buffer will send read with 4096, see that it read 1400,
+and try read 4096 again. Seeing that ret was 0, it exits.
+
+Because you can't guess the size of `/proc/stat` ahead of time,
+(Most files in procfs, when statted, will return st_size 0. Also, that's another syscall.)
+and because we can reasonably guess the size (perhaps scale with #cpus), it's fine to do a oneshot read.
 
 
 ### Question 2: How expensive is it to read `/proc/[pid]/status` compared to `/proc/[pid]/stat`?
