@@ -14,3 +14,11 @@ path = "stat-complete-read.rs"
 [[bin]]
 name = "bench-stat-complete-read-oneshot"
 path = "stat-complete-read-oneshot.rs"
+
+[[bin]]
+name = "bench-proc-status"
+path = "proc-status.rs"
+
+[[bin]]
+name = "bench-proc-statm"
+path = "proc-statm.rs"

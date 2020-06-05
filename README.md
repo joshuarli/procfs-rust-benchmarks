@@ -66,6 +66,19 @@ Because you can't guess the size of `/proc/stat` ahead of time,
 and because we can reasonably guess the size (perhaps scale with #cpus), it's fine to do a oneshot read.
 
 
-### Question 2: How expensive is it to read `/proc/[pid]/status` compared to `/proc/[pid]/stat`?
+### Question 2: How expensive is it to read `/proc/[PID]/status` compared to `/proc/[PID]/statm`?
 
-If so, it might make for a good case to write a completely separate memory watching program.
+`/proc/[PID]/status` contains a `VmSwap`, whereas statm doesn't have that information.
+
+Also from the htop FAQ:
+
+> Why doesn't htop feature a SWAP column, like top?
+
+> It is not possible to get the exact size of used swap space of a process. Top fakes this information by making SWAP = VIRT - RES, but that is not a good metric, because other stuff such as video memory counts on VIRT as well (for example: top says my X process is using 81M of swap, but it also reports my system as a whole is using only 2M of swap. Therefore, I will not add a similar Swap column to htop because I don't know a reliable way to get this information (actually, I don't think it's possible to get an exact number, because of shared pages). 
+
+So, I'm not sure how valuable `VmSwap` would actually be.
+
+`/proc/[PID]/status` contains a bunch of other information as well, and it's more humanized.
+If it isn't that much slower than reading statm however, I might think more about `VmSwap`.
+
+100k loops of status is ~0.74s, 100k loops of statm is ~0.3s. Clear winner there.
